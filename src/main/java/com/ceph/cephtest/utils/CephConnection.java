@@ -46,6 +46,7 @@ public class CephConnection {
         clientConfig.setMaxErrorRetry(DEFAULT_MAX_ERROR_RETRY);
         clientConfig.setRetryPolicy(new RetryPolicy(PredefinedRetryPolicies.DEFAULT_RETRY_CONDITION,
                 DEFAULT_BACKOFF_STRATEGY, DEFAULT_MAX_ERROR_RETRY, false));
+
         AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(cephClientServerEndpoint, "");
         AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
         builder.setEndpointConfiguration(endpointConfiguration);

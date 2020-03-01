@@ -11,4 +11,6 @@ public class AdminParameters {
     public static final String USER_GENERATED_KEY = "generate-key";
     public static final String USER_MAX_BUCKETS = "max-buckets";
     public static final String USER_SUSPENDED = "suspended";
+
+    public static final String SUB_USER_ACCESS = "access";
 }

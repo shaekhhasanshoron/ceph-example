@@ -72,6 +72,12 @@ public class CephAdminService {
         }
     }
 
+
+    public ResponseDTO createSubUser(CreateUserDTO input) {
+
+        return new ResponseDTO<>().generateSuccessResponse(null, "User has been created successfully");
+    }
+
     public ResponseDTO updateUser(UpdateUserDTO input) {
         try{
             RgwAdmin admin = cephConnection.setAdminConnection();

@@ -575,6 +575,7 @@ public class CephClientServiceV2 {
                 }
             }
             else if (AccessPolicy.valueOf(input.getAccessPolicy()) == AccessPolicy.PRIVATE) {
+//                new CannonicalGran
                 client.setObjectAcl(input.getBucketName(), input.getObjectKey(), CannedAccessControlList.Private);
             }
         } catch (AmazonServiceException e) {
@@ -651,17 +652,17 @@ public class CephClientServiceV2 {
                 totalSizeOfFilesInKB = totalSizeOfFilesInKB + ((double) file.length() / 1024);
                 fileList.add(file);
             }
-            ResponseDTO getUserQuotaResponse = cephAdminService.getUserAvailableFreeSpace(cephClientUserId);
-            if (getUserQuotaResponse.getStatus() == ResponseStatus.error) {
-                return new ResponseDTO<>().generateErrorResponse(getUserQuotaResponse.getMessage());
-            }
+//            ResponseDTO getUserQuotaResponse = cephAdminService.getUserAvailableFreeSpace(cephClientUserId);
+//            if (getUserQuotaResponse.getStatus() == ResponseStatus.error) {
+//                return new ResponseDTO<>().generateErrorResponse(getUserQuotaResponse.getMessage());
+//            }
 
-            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            long availableFreeSpaceInKB = objectMapper.convertValue(getUserQuotaResponse.getData(), new TypeReference<Long>() { });
+//            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+//            long availableFreeSpaceInKB = objectMapper.convertValue(getUserQuotaResponse.getData(), new TypeReference<Long>() { });
 
-            if (availableFreeSpaceInKB != Long.MAX_VALUE && availableFreeSpaceInKB < totalSizeOfFilesInKB) {
-                return new ResponseDTO<>().generateErrorResponse("User do not have sufficient free space");
-            }
+//            if (availableFreeSpaceInKB != Long.MAX_VALUE && availableFreeSpaceInKB < totalSizeOfFilesInKB) {
+//                return new ResponseDTO<>().generateErrorResponse("User do not have sufficient free space");
+//            }
             if (!input.isForceUpload() && !warningMessageList.isEmpty()) {
                 return new ResponseDTO<>().generateWarningResponse(warningMessageList);
             }

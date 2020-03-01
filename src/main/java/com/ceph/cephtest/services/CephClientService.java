@@ -22,6 +22,7 @@ import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
+import org.twonote.rgwadmin4j.RgwAdmin;
 
 import java.io.File;
 import java.net.URL;
@@ -181,6 +182,9 @@ public class CephClientService {
         List<Bucket> bucketList;
         try {
             bucketList = client.listBuckets();
+            RgwAdmin admin = cephConnection.setAdminConnection();
+//            admin.getBucketInfo()
+//            admin.setIndividualBucketQuota("robi-admin", "bucket-robi-hr-one", 10000, 1000000);
         } catch (AmazonServiceException e) {
             e.printStackTrace();
             return new ResponseDTO<>().generateErrorResponse(getErrorMessage(e.getErrorCode()));
@@ -188,54 +192,57 @@ public class CephClientService {
             e.printStackTrace();
             return new ResponseDTO<>().generateErrorResponse("Error In Connection");
         }
-       return new ResponseDTO<>().generateSuccessResponse(bucketList, "Bucket Successfully Created");
+       return new ResponseDTO<>().generateSuccessResponse(bucketList, "Bucket List Response");
     }
 
     public ResponseDTO deleteBucket(String bucketName) {
         AmazonS3 client = cephConnection.setClientConnection();
+        RgwAdmin admin = cephConnection.setAdminConnection();
         try {
-            /*
-                Delete all objects from the bucket.
-                This is sufficient for un-versioned buckets. For versioned buckets, when you attempt to delete objects, Amazon S3 inserts
-                delete markers for all objects, but doesn't delete the object versions.
-                To delete objects from versioned buckets, delete all of the object versions before deleting
-                the bucket (see below for an example).
-             */
-            ObjectListing objectListing = client.listObjects(bucketName);
-            while (true) {
-                Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
-                while (objIter.hasNext()) {
-                    client.deleteObject(bucketName, objIter.next().getKey());
-                }
-
-                // If the bucket contains many objects, the listObjects() call
-                // might not return all of the objects in the first listing. Check to
-                // see whether the listing was truncated. If so, retrieve the next page of objects
-                // and delete them.
-                if (objectListing.isTruncated()) {
-                    objectListing = client.listNextBatchOfObjects(objectListing);
-                } else {
-                    break;
-                }
-            }
-
-            // Delete all object versions (required for versioned buckets).
-            VersionListing versionList = client.listVersions(new ListVersionsRequest().withBucketName(bucketName));
-            while (true) {
-                Iterator<S3VersionSummary> versionIter = versionList.getVersionSummaries().iterator();
-                while (versionIter.hasNext()) {
-                    S3VersionSummary vs = versionIter.next();
-                    client.deleteVersion(bucketName, vs.getKey(), vs.getVersionId());
-                }
-
-                if (versionList.isTruncated()) {
-                    versionList = client.listNextBatchOfVersions(versionList);
-                } else {
-                    break;
-                }
-            }
+            admin.removeBucket(bucketName);
+//            /*
+//                Delete all objects from the bucket.
+//                This is sufficient for un-versioned buckets. For versioned buckets, when you attempt to delete objects, Amazon S3 inserts
+//                delete markers for all objects, but doesn't delete the object versions.
+//                To delete objects from versioned buckets, delete all of the object versions before deleting
+//                the bucket (see below for an example).
+//             */
+//            ObjectListing objectListing = client.listObjects(bucketName);
+//            while (true) {
+//                Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
+//                while (objIter.hasNext()) {
+//                    client.deleteObject(bucketName, objIter.next().getKey());
+//                }
+//
+//                // If the bucket contains many objects, the listObjects() call
+//                // might not return all of the objects in the first listing. Check to
+//                // see whether the listing was truncated. If so, retrieve the next page of objects
+//                // and delete them.
+//                if (objectListing.isTruncated()) {
+//                    objectListing = client.listNextBatchOfObjects(objectListing);
+//                } else {
+//                    break;
+//                }
+//            }
+//
+//            // Delete all object versions (required for versioned buckets).
+//            VersionListing versionList = client.listVersions(new ListVersionsRequest().withBucketName(bucketName));
+//            while (true) {
+//                Iterator<S3VersionSummary> versionIter = versionList.getVersionSummaries().iterator();
+//                while (versionIter.hasNext()) {
+//                    S3VersionSummary vs = versionIter.next();
+//                    client.deleteVersion(bucketName, vs.getKey(), vs.getVersionId());
+//                }
+//
+//                if (versionList.isTruncated()) {
+//                    versionList = client.listNextBatchOfVersions(versionList);
+//                } else {
+//                    break;
+//                }
+//            }
             // After all objects and object versions are deleted, delete the bucket.
-            client.deleteBucket(bucketName);
+//            client.deleteBucket(bucketName);
+
         } catch (AmazonServiceException e) {
             e.printStackTrace();
             return new ResponseDTO<>().generateErrorResponse(getErrorMessage(e.getErrorCode()));
@@ -654,12 +661,12 @@ public class CephClientService {
                         String fileName = userMetadata.get(ObjectKeyName.OBJECT_FILE_NAME);
                         if (!fileName.equals(ObjectKeyName.TEMPORARY_FILE_NAME_FOR_DIRECTORY_CREATE)) { // tmp-xyz.html is a temporary file which is created by system while creating directory
 //                            OffsetDateTime creationDate = OffsetDateTime.parse(userMetadata.get(ObjectKeyName.OBJECT_CREATION_DATE_TIME));
-                            LocalDateTime creationDate = LocalDateTime.parse(userMetadata.get(ObjectKeyName.OBJECT_CREATION_DATE_TIME));
+//                            LocalDateTime creationDate = LocalDateTime.parse(userMetadata.get(ObjectKeyName.OBJECT_CREATION_DATE_TIME));
                             ObjectInfoResponseDTO objectInfoResponseDTO = new ObjectInfoResponseDTO();
                             objectInfoResponseDTO.setFileKey(objectSummary.getKey());
                             objectInfoResponseDTO.setCurrentDirectory(userMetadata.get(ObjectKeyName.OBJECT_CURRENT_DIRECTORY_URL));
                             objectInfoResponseDTO.setFileName(fileName);
-                            objectInfoResponseDTO.setCreationDate(Date.from(creationDate.atZone( ZoneId.systemDefault()).toInstant()));
+//                            objectInfoResponseDTO.setCreationDate(Date.from(creationDate.atZone( ZoneId.systemDefault()).toInstant()));
                             objectInfoResponseDTO.setUrl(client.getUrl(bucketName, objectSummary.getKey()).toExternalForm());
                             objectInfoResponseDTO.setLastModifiedDate(objectSummary.getLastModified());
                             objectInfoResponseDTO.setObjectSize((int) objectSummary.getSize());
